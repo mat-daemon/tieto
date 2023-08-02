@@ -12,11 +12,11 @@ class Reader{
         void readMap();
         void readStatus();
         void printMap();
-
+        void printIndividuals();
     private:
         const std::string& map_path;
         const std::string& status_path;
         std::vector<std::vector<char>> game_map;
         long gold;
-        std::vector<char> individuals;
+        std::vector<Individual> individuals;
 };

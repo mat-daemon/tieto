@@ -17,6 +17,7 @@ class Commander{
         void generateCommands();
 
     private:
+        const std::string& path_to_commands;
         std::priority_queue<Command> commands;
         Reader reader;
 };
