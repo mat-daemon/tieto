@@ -1,14 +1,22 @@
-
 /*
-    This class implements the commander - general strategy director of a game
-    Commander has three subdiivisions:
+    This class implements the commander - general strategy director of a game.
+    Commander has three subdivisions:
     -attack
     -defense
-    -logistics
+    -mining
 */
+#include <string>
+#include <queue>
+#include "commands.h"
+#include "reader.h"
+
 
 class Commander{
     public:
-        Commander();
+        Commander(const std::string& map_path, const std::string& status_path, const std::string& commands_path);
+        void generateCommands();
 
+    private:
+        std::priority_queue<Command> commands;
+        Reader reader;
 };
