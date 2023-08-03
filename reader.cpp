@@ -76,6 +76,15 @@ void Reader::readStatus(){
     file.close();
 }
 
+const std::vector<std::vector<char>>& Reader::showMap(){
+    return game_map;
+}
+
+const std::vector<Individual>& Reader::showIndividuals(){
+    return individuals;
+}
+
+// Debugging purpose
 void Reader::printMap(){
     for(const auto& single_row : game_map){
         for(const char& cell : single_row) std::cout<<cell<<" ";

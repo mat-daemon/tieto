@@ -1,4 +1,1 @@
-
-class AttackAdvisor{
-    
-};
+#include "advisor.h"

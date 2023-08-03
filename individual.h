@@ -1,3 +1,6 @@
+#ifndef INDIVIDUAL_H
+#define INDIVIDUAL_H
+
 /*
     This struct implements an individual entity that exists in a game
 */
@@ -23,3 +26,4 @@ class Individual{
 
 };
 
+#endif

@@ -11,6 +11,8 @@ class Reader{
         Reader(const std::string& path_to_map, const std::string& path_to_status) : map_path(path_to_map), status_path(path_to_status){}
         void readMap();
         void readStatus();
+        const std::vector<std::vector<char>>& showMap();
+        const std::vector<Individual>& showIndividuals();
         void printMap();
         void printIndividuals();
     private:
