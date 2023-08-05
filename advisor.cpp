@@ -21,7 +21,7 @@ bool Advisor::opponent_in_range(const Individual* individual, const Individual* 
 /*
     Find any opponent that is in the range of the individual
 */
-const Individual* Advisor::find_opponent_in_range(const Individual* individual, const std::vector<const Individual*>&  opponent_individuals){
+const Individual* Advisor::find_opponent_in_range(const Individual* individual){
     for(const Individual* opponent : opponent_individuals){
         if(opponent_in_range(individual, opponent)) return opponent;
     }
@@ -41,19 +41,31 @@ std::pair<int, int> Advisor::find_furthest_point_in_path_within_range(const Indi
     int i = target->x_coordinate;
     int j = target->y_coordinate;
     
+    std::cout<<"Find farthest...\n";
+    
     while(cell_details[i][j].parent_i != -1){
-        if(calculateDistance(individual->x_coordinate, individual->y_coordinate, std::make_pair(i, j)) <= Individual::statistics.find(individual->type)->second.find("range")->second){
+        if(calculateDistance(individual->x_coordinate, individual->y_coordinate, std::make_pair(i, j)) <= Individual::statistics.find(individual->type)->second.find("speed")->second){
             return std::make_pair(i,j);
         }
 
         i = cell_details[i][j].parent_i;
-        j = cell_details[i][j].parent_j; 
+        j = cell_details[i][j].parent_j;
+        
+        std::cout<<i<<" "<<j<<"\n"; 
     }
 
     return std::make_pair(-1,-1);
 }
 
-std::pair<int, int> Advisor::find_next_step(const Individual* individual, const Individual* target, std::vector<const Individual*>&  opponent_individuals){
+/*
+    Find next x,y coordinates the individual can move on to reach the target using A* algorithm.
+    It calculates path from individual to target in cell_details map.
+    The path can be recreated by backtracing from the target.
+    Point is choosen when it is on the path and the target can reach this point (sufficient speed points).
+    Possibly the fathest point on the path is choosen.
+    When there is no such point, then return (-1,-1)
+*/
+std::pair<int, int> Advisor::find_next_step(const Individual* individual, const Individual* target){
     /*
         Create grid map following the rules:
         - obstacles cells are blocked
@@ -64,18 +76,34 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
     int row_nr = game_map.size();
     int col_nr = game_map[0].size();
     
+    std::cout<<"Row nr: "<<row_nr<<" Col nr: "<<col_nr<<"\n";
+    
     // grid
     std::vector<std::vector<int>> grid(row_nr , std::vector<int> (col_nr, 0)); 
 
+    std::cout<<"Building grid\n";
     for(int i=0; i<row_nr; i++){
         for(int j=0; j<col_nr; j++){
-            if(game_map[i][j] == '9') grid[i][j] = 1;
+            if(game_map[i][j] == '9'){
+                grid[i][j] = 1;
+                
+                std::cout<<1<<" ";
+            }
+            
+            else std::cout<<0<<" ";
         }
+        
+        std::cout<<"\n";
     }
 
     for(const Individual* i : opponent_individuals){
+        std::cout<<i->x_coordinate<<" "<<i->y_coordinate<<"\n";
+        std::cout<<"Grid size: "<<grid.size()<<" "<<grid[0].size()<<"\n";
+        
         grid[i->x_coordinate][i->y_coordinate] = 1;
     }
+
+    std::cout<<"END gridding\n";
 
     // source and destination
     std::pair<int, int> src = std::make_pair(individual->x_coordinate, individual->y_coordinate);
@@ -86,7 +114,7 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
     std::vector<std::vector<bool>> closed_list(row_nr , std::vector<bool> (col_nr, false));
 
     // details list
-    std::vector<std::vector<cell>> cell_details(row_nr , std::vector<cell> (col_nr));
+    std::vector<std::vector<cell>> cell_details(row_nr , std::vector<cell> (col_nr, cell()));
 
     for (int i = 0; i < row_nr; i++) {
         for (int j = 0; j < col_nr; j++) {
@@ -97,7 +125,9 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
             cell_details[i][j].parent_j = -1;
         }
     }
- 
+
+    std::cout<<"cell_detail initialised\n";
+
     // Initialising the parameters of the starting node
     cell_details[src.first][src.second].f = 0;
     cell_details[src.first][src.second].g = 0;
@@ -109,9 +139,13 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
 
     bool foundDest = false;
 
+    std::cout<<"Start looping\n";
+    
     while (!open_list.empty()) {
         std::pair<int, std::pair<int, int>> p = *open_list.begin();
- 
+        
+        std::cout<<p.second.first<<" "<<p.second.second<<"\n";
+        
         // Remove this vertex from the open list
         open_list.erase(open_list.begin());
  
@@ -136,7 +170,7 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
                     cell_details[x + shift.first][y + shift.second].parent_j = y;
                     foundDest = true;
 
-
+                    return find_furthest_point_in_path_within_range(individual, target, cell_details);
                 }
                 // If the successor is already on the closed
                 // list or if it is blocked, then ignore it.
@@ -175,60 +209,4 @@ std::pair<int, int> Advisor::find_next_step(const Individual* individual, const 
 
     // something went wrong
     return std::make_pair(-1, -1);
-}
-
-/*
-    End of
-    Find next x,y coordinates the individual can move on to reach the target.
-    A* implementation
-    -----------------------------------------------------------------------------
-*/
-
-
-std::vector<std::unique_ptr<Command>> Advisor::advise(){
-    std::vector<std::unique_ptr<Command>> commands;
-
-    commands.push_back(std::make_unique<Move>(60, 1, 10, 12));
-    commands.push_back(std::make_unique<Attack>(50, 1, 2));
-    commands.push_back(std::make_unique<Build>(70, 1, 'C'));
-
-
-    /*
-        Naive attack strategy
-        If player's individual can attack the base then attack.
-        Attack advisor adds constant priority to every command as attack is the main objective.
-        If opponent's individual is within the attack range, then check if one is stronger. When stronger then push to base else attack and fight.  
-        Else push the base.
-    */ 
-
-    char player = 'P';
-    char opponent = 'E';
-
-
-    // Split individuals
-    // It is safe using raw pointers, because individuals exists during program lifetime in the Reader
-    const Individual* player_base;
-    const Individual* opponent_base;
-    
-    std::vector<const Individual*>  opponent_individuals;
-    std::vector<const Individual*> player_individuals;
-
-
-    for(const Individual& i : individuals){
-        if(i.owner == player){
-            if(i.type != 'B') player_individuals.push_back(&i);
-            else player_base = &i;
-        }
-        else{
-                if(i.type != 'B') opponent_individuals.push_back(&i);
-                else opponent_base = &i;
-        }
-    }
-
-    
-    for(const Individual* i : player_individuals){
-        
-    }
-
-    return commands;
 }
