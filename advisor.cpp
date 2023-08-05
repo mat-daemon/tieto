@@ -38,12 +38,15 @@ const Individual* Advisor::find_opponent_in_range(const Individual* individual){
 // Sadly cutting all those calculations to the next move
 std::pair<int, int> Advisor::find_furthest_point_in_path_within_range(const Individual* individual, const Individual* target, const std::vector<std::vector<cell>>& cell_details){
     // Go from the target through the calculated path towards the individual and Find the farthest possible point you can move within the range of the individual
-    int i = target->x_coordinate;
-    int j = target->y_coordinate;
+    
+    // Target always exists and always has a parent
+    // Start from target's parent, because often individual can't step directly on the target (player and opponent cannot be in the same point)
+    int i = cell_details[target->x_coordinate][target->y_coordinate].parent_i;
+    int j = cell_details[target->x_coordinate][target->y_coordinate].parent_i;
     
     std::cout<<"Find farthest...\n";
     
-    while(cell_details[i][j].parent_i != -1){
+    while(i!=-1 && j!=-1 && cell_details[i][j].parent_i != -1){
         if(calculateDistance(individual->x_coordinate, individual->y_coordinate, std::make_pair(i, j)) <= Individual::statistics.find(individual->type)->second.find("speed")->second){
             return std::make_pair(i,j);
         }
