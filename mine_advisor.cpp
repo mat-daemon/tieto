@@ -51,12 +51,15 @@ std::vector<std::unique_ptr<Command>> MineAdvisor::advise(){
 
     char mine_sign = '6';
     int miners_nr = 0;
+    int minimum_miners = player_individuals.size()/4;
+
     std::vector<std::pair<int, int>> mines = find_mines();
 
     for(const Individual* i : player_individuals){
         if(i->type == 'W'){
             miners_nr++;
 
+            // If miner is not in a mine
             if(!game_map[i->x_coordinate][i->y_coordinate] == mine_sign){
                 std::pair<int, int> nearest_mine = find_nearest_mine(i, mines);
 
@@ -80,12 +83,12 @@ std::vector<std::unique_ptr<Command>> MineAdvisor::advise(){
                 }
                
             }
-
+            // Else stay in a mine
+            else commands.push_back(std::make_unique<Move>(command_priority, i->id, i->x_coordinate, i->y_coordinate));
         } 
     }
 
-    // always ask for new miner
-    commands.push_back(std::make_unique<Build>(command_priority, player_base->id, 'W'));
+    if(miners_nr < minimum_miners) commands.push_back(std::make_unique<Build>(command_priority, player_base->id, 'W'));
     
 
     return commands;

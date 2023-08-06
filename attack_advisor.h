@@ -1,5 +1,5 @@
 #include "advisor.h"
-
+#include <set>
 
 class AttackAdvisor : Advisor{
     public:
@@ -10,4 +10,5 @@ class AttackAdvisor : Advisor{
         std::vector<std::unique_ptr<Command>> advise();
     private:
         int command_priority;
+        char select_individual_type(const std::vector<const Individual*>& player_attack_individuals, const std::set<char>& attackers);
 };

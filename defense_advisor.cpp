@@ -78,8 +78,8 @@ std::vector<std::unique_ptr<Command>> DefenseAdvisor::advise(){
         } 
     }
     
-    // set minimum bound of defensors in danger zone near base
-    int possible_nr_of_attackers = opponent_individuals.size()/2;
+    // Set minimum bound of defensors in danger zone near base
+    int possible_nr_of_attackers = opponent_individuals.size()/3;
     int minimum_defensors = 2 > possible_nr_of_attackers ? 2 : possible_nr_of_attackers;
 
 
@@ -111,11 +111,25 @@ std::vector<std::unique_ptr<Command>> DefenseAdvisor::advise(){
                         distance_covered+1 <= Individual::statistics.find(i->type)->second.find("speed")->second){
                             commands.push_back(std::make_unique<Attack>(command_priority, i->id, nearest_opponent->id));
                     }
-                } 
+                }
+
+                // If move is impossible than stay in danger zone
+                else
+                    commands.push_back(std::make_unique<Move>(command_priority, i->id, i->x_coordinate, i->y_coordinate));
 
             }
             
 
+        }
+    }
+    // Safe situation - keep some individuals in a danger zone
+    else{
+        int defensors_to_keep = minimum_defensors;
+        for(const Individual* i : player_defense_individuals_in_danger_zone){
+            if(defensors_to_keep>0 && defensors.find(i->type) != defensors.end()){
+                commands.push_back(std::make_unique<Move>(command_priority, i->id, i->x_coordinate, i->y_coordinate));
+                defensors_to_keep--;
+            }
         }
     }
 

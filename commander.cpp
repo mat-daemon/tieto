@@ -71,7 +71,7 @@ void Commander::generateCommands(){
 
     /* Create advisors
         - attack priority 60
-        - defense priority 100 (or when there is no danger 50)
+        - defense priority 100
         - mine priority 70
     */
     AttackAdvisor attack_advisor(60, reader.showMap(), player_individuals, opponent_individuals, player_base, opponent_base);
@@ -115,12 +115,17 @@ void Commander::generateCommands(){
         std::cout<<c->getCommand()<<"\n";
         
         // Consider build
-        if(!is_base_building && c->get_type() == 'B'){
-            char type_to_build = c->getCommand().back();
+        if(c->get_type() == 'B'){
+            if(!is_base_building){
+                char type_to_build = c->getCommand().back();
 
-            if(gold >= Individual::statistics.find(type_to_build)->second.find("cost")->second){
-                out << c->getCommand() <<"\n";
-                is_base_building = true;
+                // If enough gold then build
+                if(gold >= Individual::statistics.find(type_to_build)->second.find("cost")->second){
+                    out << c->getCommand() <<"\n";
+                    is_base_building = true;
+                }
+                // If not enough gold, then wait for more gold
+                else is_base_building = true;               
             }
         }
         
