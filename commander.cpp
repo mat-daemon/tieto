@@ -4,6 +4,8 @@
 #include "commander.h"
 #include "advisor.h"
 #include "attack_advisor.h"
+#include "defense_advisor.h"
+#include "mine_advisor.h"
 
 
 Commander::Commander(const std::string& map_path, const std::string& status_path, const std::string& commands_path)
@@ -59,15 +61,21 @@ void Commander::generateCommands(){
     */
 
     AttackAdvisor attack_advisor(50, reader.showMap(), player_individuals, opponent_individuals, player_base, opponent_base);
+    DefenseAdvisor defense_advisor(100, reader.showMap(), player_individuals, opponent_individuals, player_base, opponent_base);
+    MineAdvisor mine_advisor(70, reader.showMap(), player_individuals, opponent_individuals, player_base, opponent_base);
 
     std::priority_queue<std::unique_ptr<Command>> commands_register;
     
     std::cout<<"Attack advisor advising\n";
 
     std::vector<std::unique_ptr<Command>> attack_commands(attack_advisor.advise());
+    std::vector<std::unique_ptr<Command>> defense_commands(defense_advisor.advise());
+    std::vector<std::unique_ptr<Command>> mine_commands(mine_advisor.advise());
+
 
     for(auto& c : attack_commands) commands_register.push(std::move(c));
-
+    for(auto& c : defense_commands) commands_register.push(std::move(c));
+    for(auto& c : mine_commands) commands_register.push(std::move(c));
 
     std::ofstream out(path_to_commands);
 
