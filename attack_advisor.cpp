@@ -25,7 +25,7 @@ char AttackAdvisor::select_individual_type(const std::vector<const Individual*>&
         If player's individual can attack the base then attack.
         Attack advisor adds constant priority to every command as attack is the main objective.
         If opponent's individual is within the attack range, then check if one is stronger. When stronger then push to base else attack and fight.  
-        Else push the base.
+        Else move towards the base and attack when it is possible.
         Attack advisor advise every player's individual to attack - he is very insistent.
         Other advisors can override his decisions when they have higher priority.
 */ 
@@ -44,17 +44,28 @@ std::vector<std::unique_ptr<Command>> AttackAdvisor::advise(){
         } 
 
         else{
-            const Individual* opponent_in_range = find_opponent_in_range(i);
+            const Individual* enemy_in_range = find_opponent_in_range(i);
 
-            if(opponent_in_range != nullptr) {
-                std::cout<<"Opponent in range: "<<command_priority<<" "<< i->id<<" "<< opponent_in_range->id<<"\n";
-                commands.push_back(std::make_unique<Attack>(command_priority, i->id, opponent_in_range->id));
+            if(enemy_in_range != nullptr) {
+                std::cout<<"Opponent in range: "<<command_priority<<" "<< i->id<<" "<< enemy_in_range->id<<"\n";
+                commands.push_back(std::make_unique<Attack>(command_priority, i->id, enemy_in_range->id));
             }
 
             else{
                 std::pair<int, int> next_step = find_next_step(i, opponent_base);
                 std::cout<<"Next step: "<<command_priority<<" "<< i->id<<" "<< next_step.first<< " "<<next_step.second<<"\n";
-                if(next_step.first!=-1) commands.push_back(std::make_unique<Move>(command_priority, i->id, next_step.first, next_step.second));
+                if(next_step.first!=-1){
+                    commands.push_back(std::make_unique<Move>(command_priority, i->id, next_step.first, next_step.second));
+
+                    int distance_to_base = calculateDistance(opponent_base->x_coordinate, opponent_base->y_coordinate, next_step);
+                    int distance_covered = calculateDistance(i->x_coordinate, i->y_coordinate, next_step);
+
+                    // If individual has enough range to attack the base and has also one speed point after move then attack
+                    if(distance_to_base <= Individual::statistics.find(i->type)->second.find("range")->second &&
+                        distance_covered+1 <= Individual::statistics.find(i->type)->second.find("speed")->second){
+                            commands.push_back(std::make_unique<Attack>(command_priority, i->id, opponent_base->id));
+                    }
+                }
             }
         }
 
