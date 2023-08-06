@@ -42,7 +42,7 @@ std::pair<int, int> Advisor::find_furthest_point_in_path_within_range(const Indi
     // Target always exists and always has a parent
     // Start from target's parent, because often individual can't step directly on the target (player and opponent cannot be in the same point)
     int i = cell_details[target->x_coordinate][target->y_coordinate].parent_i;
-    int j = cell_details[target->x_coordinate][target->y_coordinate].parent_i;
+    int j = cell_details[target->x_coordinate][target->y_coordinate].parent_j;
     
     std::cout<<"Find farthest...\n";
     
