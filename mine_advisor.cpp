@@ -60,7 +60,7 @@ std::vector<std::unique_ptr<Command>> MineAdvisor::advise(){
             miners_nr++;
 
             // If miner is not in a mine
-            if(!game_map[i->x_coordinate][i->y_coordinate] == mine_sign){
+            if(!(game_map[i->x_coordinate][i->y_coordinate] == mine_sign)){
                 std::pair<int, int> nearest_mine = find_nearest_mine(i, mines);
 
                 if(nearest_mine.first != -1){

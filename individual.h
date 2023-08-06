@@ -5,7 +5,7 @@
     This struct implements an individual entity that exists in a game
 */
 #include <map>
-
+#include <string>
 
 class Individual{
     public:
