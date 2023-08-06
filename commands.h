@@ -10,6 +10,9 @@ struct Command{
 
     virtual std::string getCommand() const = 0;
 
+    int get_priority() const;
+    virtual char get_type() const = 0;
+    virtual int get_subject() const = 0;
     bool operator<(const Command& c);    
 };
 
@@ -19,6 +22,8 @@ struct Move : Command{
     int x;
     int y;
 
+    char get_type() const;
+    int get_subject() const; 
     std::string getCommand() const;
 };
 
@@ -27,8 +32,9 @@ struct Attack : Command{
     int attacker_id;
     int victim_id;
 
-    std::string getCommand() const;
-    
+    char get_type() const;
+    int get_subject() const; 
+    std::string getCommand() const; 
 };
 
 struct Build : Command{
@@ -36,6 +42,8 @@ struct Build : Command{
     int base_id;
     char individual_to_build;
 
+    char get_type() const;
+    int get_subject() const; 
     std::string getCommand() const;
 };
 

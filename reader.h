@@ -15,6 +15,7 @@ class Reader{
         const std::vector<Individual>& showIndividuals();
         void printMap();
         void printIndividuals();
+        int getGold();
     private:
         const std::string& map_path;
         const std::string& status_path;

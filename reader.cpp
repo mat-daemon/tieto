@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sstream>
 
+
+int Reader::getGold(){return gold;};
+
+
 void Reader::readMap(){
     std::ifstream file(map_path);
 
@@ -24,6 +28,7 @@ void Reader::readMap(){
 
     file.close();
 }
+
 
 void Reader::readStatus(){
     std::ifstream file(status_path);
