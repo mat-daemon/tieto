@@ -49,6 +49,7 @@ std::pair<int, int> MineAdvisor::find_nearest_mine(const Individual* individual,
 std::vector<std::unique_ptr<Command>> MineAdvisor::advise(){
     std::vector<std::unique_ptr<Command>> commands;
 
+    // TODO: delete magic numbers
     char mine_sign = '6';
     int miners_nr = 0;
     int minimum_miners = player_individuals.size()/4;
