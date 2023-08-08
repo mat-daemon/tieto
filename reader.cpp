@@ -60,8 +60,8 @@ void Reader::readStatus(){
         char i_owner = individual_parameters[0].c_str()[0];
         char i_type = individual_parameters[1].c_str()[0];
         int i_id = stoi(individual_parameters[2]);
-        int i_x = stoi(individual_parameters[3]);
-        int i_y = stoi(individual_parameters[4]);
+        int i_x = stoi(individual_parameters[4]); // in requirements x - column nr, i use it as a row nr
+        int i_y = stoi(individual_parameters[3]); // in requirements y - row nr, i use it as a col nr
         int i_stamina = stoi(individual_parameters[5]);
 
         // push base

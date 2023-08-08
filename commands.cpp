@@ -36,7 +36,7 @@ int Build::get_subject() const{
 
 std::string Move::getCommand() const{
     std::stringstream ss;
-    ss<< individual_id << " " << "M "<< x << " " << y;
+    ss<< individual_id << " " << "M "<< y << " " << x; // in requirements first goes col nr then row nr
     return ss.str();
 }
 
