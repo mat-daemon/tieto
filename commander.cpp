@@ -111,7 +111,6 @@ void Commander::generateCommands(){
 
     // Consider commands in priority order
     for(const auto&  c : commands_register){
-        //auto const& c = commands_register.top();
         
         std::cout<<c->getCommand()<<"\n";
         
