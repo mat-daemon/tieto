@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include "commander.h"
 #include "advisor.h"
 #include "attack_advisor.h"
@@ -18,8 +19,8 @@ Commander::Commander(const std::string& map_path, const std::string& status_path
 
 class CompareCommands {
 public:
-  bool operator()(const std::unique_ptr<Command>& a, const std::unique_ptr<Command>& b) {
-    return a->get_priority() < b->get_priority();
+  bool operator()(const std::unique_ptr<Command>& a, const std::unique_ptr<Command>& b) const{
+    return a->get_priority() > b->get_priority();
   }
 };
 
@@ -79,16 +80,16 @@ void Commander::generateCommands(){
     MineAdvisor mine_advisor(70, reader.showMap(), player_individuals, opponent_individuals, player_base, opponent_base);
 
     // Additional comparator must exist when storing unique_ptr
-    std::priority_queue<std::unique_ptr<Command>, std::vector<std::unique_ptr<Command>>, CompareCommands> commands_register;
+    std::multiset<std::unique_ptr<Command>, CompareCommands> commands_register;
 
     // Each advisor makes its strategy
     std::vector<std::unique_ptr<Command>> attack_commands(attack_advisor.advise());
     std::vector<std::unique_ptr<Command>> defense_commands(defense_advisor.advise());
     std::vector<std::unique_ptr<Command>> mine_commands(mine_advisor.advise());
 
-    for(auto& c : attack_commands) commands_register.push(std::move(c));
-    for(auto& c : defense_commands) commands_register.push(std::move(c));
-    for(auto& c : mine_commands) commands_register.push(std::move(c));
+    for(auto& c : attack_commands) commands_register.insert(std::move(c));
+    for(auto& c : defense_commands) commands_register.insert(std::move(c));
+    for(auto& c : mine_commands) commands_register.insert(std::move(c));
     
 
     /* Individual can be built only when:
@@ -109,8 +110,8 @@ void Commander::generateCommands(){
 
 
     // Consider commands in priority order
-    while(!commands_register.empty()){
-        auto const& c = commands_register.top();
+    for(const auto&  c : commands_register){
+        //auto const& c = commands_register.top();
         
         std::cout<<c->getCommand()<<"\n";
         
@@ -131,7 +132,7 @@ void Commander::generateCommands(){
         
         else{
             int individual_id = c->get_subject();
-
+ 
             /* 
                 If command with same priority was previously added then add also the next command.
                 It applies to combination of move + attack commands.
@@ -142,17 +143,39 @@ void Commander::generateCommands(){
                     - move + attack
             */
             if(individuals_priority.find(individual_id) != individuals_priority.end()){
-                if(individuals_priority[individual_id] == c->get_priority()) out << c->getCommand() <<"\n";
+                
+                if(individuals_priority[individual_id] == c->get_priority()){
+                    if(c->get_type() == 'A'){
+                        
+                        if(!attack_ordered){
+                            attack_ordered = true;
+                            out << c->getCommand() <<"\n";
+                        }
+                        
+                    }
+                    else out << c->getCommand() <<"\n";
+                } 
             }
 
             else{
-                individuals_priority.insert({individual_id, c->get_priority()});
-                out << c->getCommand() <<"\n";
+                if(c->get_type() == 'A'){
+                        
+                    if(!attack_ordered){
+                        attack_ordered = true;
+                        individuals_priority.insert({individual_id, c->get_priority()});
+                        out << c->getCommand() <<"\n";
+                    }
+                        
+                }
+                else{
+                    individuals_priority.insert({individual_id, c->get_priority()});
+                    out << c->getCommand() <<"\n";
+                }
+                
             }
             
         }
         
-        commands_register.pop();
     }
     
 
